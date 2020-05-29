@@ -1,0 +1,5 @@
+# docker run script 
+run.sh
+
+# mounted directory
+docker/.pyrec_dataset
