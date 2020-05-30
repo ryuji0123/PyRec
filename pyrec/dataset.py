@@ -2,8 +2,11 @@ import os
 import sys
 import itertools
 
+from collections import defaultdict
+
 from .builtin_datasets import BUILTIN_DATASETS, download_builtin_dataset
 from .reader import Reader
+from .trainset import Trainset
 
 class Dataset:
     def __init__(self, reader):
@@ -60,6 +63,55 @@ class Dataset:
             ]
 
         return raw_ratings
+
+    def construct_trainset(self, raw_trainset):
+        raw2inner_id_users = {}
+        raw2inner_id_items = {}
+
+        current_user_idx = 0
+        current_item_idx = 0
+
+        ur = defaultdict(list)
+        ir = defaultdict(list)
+
+        for user_raw_id, item_raw_id, rating, timestamp in raw_trainset:
+            try:
+                uid = raw2inner_id_users[user_raw_id]
+            except KeyError:
+                uid = current_user_idx
+                raw2inner_id_users[user_raw_id] = current_user_idx
+                current_user_idx += 1
+
+            try:
+                iid = raw2inner_id_items[item_raw_id]
+            except KeyError:
+                iid = current_item_idx
+                raw2inner_id_items[item_raw_id] = current_item_idx
+                current_item_idx += 1
+
+            ur[uid].append((iid, rating))
+            ir[iid].append((uid, rating))
+
+        n_users = len(ur)
+        n_items = len(ir)
+        n_ratings = len(raw_trainset)
+
+        return Trainset(
+            ur=ur,
+            ir=ir,
+            n_users=n_users,
+            n_items=n_items,
+            n_ratings=n_ratings,
+            rating_scale=self.reader.rating_scale,
+            raw2inner_id_users=raw2inner_id_users,
+            raw2inner_id_items=raw2inner_id_items
+        )
+
+    def construct_testset(self, raw_testset):
+        return [
+            (raw_user_id, raw_item_id, raw_user_item_trans)
+            for (raw_user_id, raw_item_id, raw_user_item_trans, _) in raw_testset
+        ]
 
 class DatasetAutoFolds(Dataset):
     """

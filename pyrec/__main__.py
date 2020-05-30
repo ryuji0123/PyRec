@@ -9,6 +9,8 @@ sys.path.insert(0, path)
 from pyrec.dataset import Dataset
 from pyrec.builtin_datasets import BUILTIN_DATASETS, get_dataset_dir
 
+from pyrec.model_selection import KFold
+
 class MyParser(argparse.ArgumentParser):
     """
     A parser which prints the help message when an error occurs.
@@ -38,6 +40,22 @@ def main():
         help=f"Remove the {get_dataset_dir()} directory and exit.",
     )
 
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=None,
+        dest="seed",
+        help="The seed to use"
+    )
+
+    parser.add_argument(
+        "--n-splits",
+        type=int,
+        default=5,
+        dest="n_splits",
+        help="The number of folds for cross-validation. Default is 5."
+    )
+
     args = parser.parse_args()
 
     if args.clean:
@@ -47,6 +65,10 @@ def main():
         exit()
 
     data = Dataset.load_builtin(args.load_builtin)
+    cv = KFold(n_splits=args.n_splits, random_state=args.seed)
+    for train, test in cv.split(data):
+        print(train)
+        print(len(test))
 
 if __name__ == '__main__':
     main()
