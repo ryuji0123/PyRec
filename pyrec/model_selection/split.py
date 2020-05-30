@@ -1,6 +1,27 @@
 import numpy as np
+import numbers
+
 from itertools import chain
+
 from ..utils import get_rng
+
+
+def get_cv(cv):
+    """
+    :param cv:
+    :return: a validated CV iterator
+    """
+
+    if cv is None:
+        return KFold()
+    if isinstance(cv, numbers.Integral):
+        return KFold(n_splits=cv)
+    if hasattr(cv, "split") and not isinstance(cv, str):
+        return cv
+
+    raise ValueError(
+        f"Wrong CV object. Expecting None, an int ot CV iterator, got a {type(cv)}"
+    )
 
 class KFold():
     """

@@ -3,3 +3,9 @@ run.sh
 
 # mounted directory
 docker/.pyrec_dataset
+
+build
+pyrec/prediction_algorithms/matrix_factorization.c
+
+*.so
+.idea/*

@@ -1,3 +1,5 @@
-numpy>=1.11.2
-pandas
-pytest>=3.0.3
+numpy==1.18.0
+pandas==1.0.4
+joblib==0.14.1
+pytest==5.4.2
+cython==0.29.19

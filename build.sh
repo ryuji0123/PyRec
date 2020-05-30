@@ -1,5 +1,6 @@
 #!/bin/bash
 mkdir -p docker/.pyrec_dataset
-if test -z "$(docker inspect --type=image pyrec:0.0.1)"; then
-  docker build -t pyrec:0.0.1 -f docker/Dockerfile .
+if test -z "$(docker images -q pyrec:0.0.2)" -o -n "$(git diff --exit-code requirements_dev.txt)"; then
+  dpcker system prune -f
+  docker build -t pyrec:0.0.2 -f docker/Dockerfile .
 fi

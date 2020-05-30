@@ -9,7 +9,9 @@ sys.path.insert(0, path)
 from pyrec.dataset import Dataset
 from pyrec.builtin_datasets import BUILTIN_DATASETS, get_dataset_dir
 
-from pyrec.model_selection import KFold
+from pyrec.model_selection import KFold, cross_validate
+
+from pyrec.prediction_algorithms import SVD
 
 class MyParser(argparse.ArgumentParser):
     """
@@ -21,8 +23,20 @@ class MyParser(argparse.ArgumentParser):
        sys.exit(2)
 
 def main():
+    algo_choices = {
+        'SVD': SVD,
+    }
+
     parser = MyParser(
         description="Evaluate the performance of a rating prediction",
+    )
+
+    parser.add_argument(
+        "--algo",
+        type=str,
+        choices=algo_choices,
+        help=f"The prediction algorithm to use. Allowed values are {','.join(algo_choices.keys())}.",
+        metavar="<prediction algorithm>"
     )
 
     parser.add_argument(
@@ -66,9 +80,8 @@ def main():
 
     data = Dataset.load_builtin(args.load_builtin)
     cv = KFold(n_splits=args.n_splits, random_state=args.seed)
-    for train, test in cv.split(data):
-        print(train)
-        print(len(test))
+    cross_validate()
+
 
 if __name__ == '__main__':
     main()
