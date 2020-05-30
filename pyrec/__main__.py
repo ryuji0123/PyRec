@@ -1,7 +1,10 @@
 import argparse
-import sys
 import os
+import random
 import shutil
+import sys
+
+import numpy as np
 
 path = os.path.join(os.path.dirname(sys.modules[__name__].__file__), "..")
 sys.path.insert(0, path)
@@ -36,7 +39,15 @@ def main():
         type=str,
         choices=algo_choices,
         help=f"The prediction algorithm to use. Allowed values are {','.join(algo_choices.keys())}.",
-        metavar="<prediction algorithm>"
+        metavar="<prediction algorithm>",
+        default="SVD"
+    )
+
+    parser.add_argument(
+        "--clean",
+        action="store_true",
+        dest="clean",
+        help=f"Remove the {get_dataset_dir()} directory and exit.",
     )
 
     parser.add_argument(
@@ -48,10 +59,20 @@ def main():
     )
 
     parser.add_argument(
-        "--clean",
-        action="store_true",
-        dest="clean",
-        help=f"Remove the {get_dataset_dir()} directory and exit.",
+        "--n-splits",
+        type=int,
+        default=5,
+        dest="n_splits",
+        help="The number of folds for cross-validation. Default is 5."
+    )
+
+    parser.add_argument(
+        "--params",
+        type=str,
+        metavar="<algorithm parameters>",
+        default="{}",
+        help="A kwargs dictionary that contains all the algorithm parameters."
+             "Example: {\'n_epochs\': 10}"
     )
 
     parser.add_argument(
@@ -62,13 +83,6 @@ def main():
         help="The seed to use"
     )
 
-    parser.add_argument(
-        "--n-splits",
-        type=int,
-        default=5,
-        dest="n_splits",
-        help="The number of folds for cross-validation. Default is 5."
-    )
 
     args = parser.parse_args()
 
@@ -78,10 +92,17 @@ def main():
         print(f"Removed {folder_path}")
         exit()
 
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+
+    params = eval(args.params)
+    if args.algo is None:
+        parser.error("No algorithm was specified.")
+    algo = algo_choices[args.algo](**params)
+
     data = Dataset.load_builtin(args.load_builtin)
     cv = KFold(n_splits=args.n_splits, random_state=args.seed)
-    cross_validate()
-
+    cross_validate(algo=algo, data=data, cv=cv, verbose=True)
 
 if __name__ == '__main__':
     main()

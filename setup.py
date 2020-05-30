@@ -6,7 +6,7 @@ from os import path
 Release instruction:
 """
 
-__version__ = "0.0.2"
+__version__ = open('version.txt', 'r').read().strip()
 
 try:
     import numpy as np

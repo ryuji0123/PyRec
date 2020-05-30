@@ -26,7 +26,10 @@ def cross_validate(algo, data, measures=["rmse", "mae"], cv=None, return_train_m
         delayed(fit_and_score)(algo, trainset, testset, measures, return_train_measuers)
         for (trainset, testset) in cv.split(data)
     )
-
+    out = Parallel(
+        n_jobs=n_jobs, pre_dispatch=pre_dispatch
+    )(delayed_list)
+    return
 
 def fit_and_score(algo, trainset, testset, measures, return_train_measures=False):
     """
@@ -41,3 +44,5 @@ def fit_and_score(algo, trainset, testset, measures, return_train_measures=False
     """
     start_fit = time.time()
     algo.fit(trainset)
+    fit_time = time.time() - start_fit
+    print(fit_time)
