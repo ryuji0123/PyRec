@@ -49,3 +49,6 @@ def fit_and_score(algo, trainset, testset, measures, return_train_measures=False
     predictions = algo.test(testset)
     test_time = time.time() - start_test
     print(f"fit: {fit_time}, test: {test_time}")
+
+    if return_train_measures:
+        train_predictions = algo.test(trainset.build_testset())
