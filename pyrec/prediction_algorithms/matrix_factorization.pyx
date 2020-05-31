@@ -2,6 +2,8 @@ cimport numpy as np
 import numpy as np
 
 from .algo_base import AlgoBase
+from .predictions import PredictionImpossible
+
 from ..utils import get_rng
 
 class SVD(AlgoBase):
@@ -43,7 +45,6 @@ class SVD(AlgoBase):
         self.verbose = verbose
 
         AlgoBase.__init__(self)
-
 
     def fit(self, trainset):
         AlgoBase.fit(self, trainset)
@@ -123,3 +124,20 @@ class SVD(AlgoBase):
         self.bi = bi
         self.pu = pu
         self.qi = qi
+
+    def estimate(self, u, i):
+        is_known_user = self.trainset.knows_user(u)
+        is_known_item = self.trainset.knows_item(i)
+
+        if self.biased:
+            est = self.trainset.global_mean
+            est += self.bu[u] if is_known_user else 0
+            est += self.bi[i] if is_known_item else 0
+            est += np.dot(self.qi[i], self.pu[u]) if is_known_user and is_known_item else 0
+        else:
+            if is_known_user and is_known_item:
+                est = np.dot(self.qi[i], self.pu[u])
+            else:
+                raise PredictionImpossible("User and item are unknown.")
+
+        return est

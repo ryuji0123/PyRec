@@ -42,6 +42,48 @@ class Trainset:
         """
         return range(self.n_items)
 
+    def to_inner_uid(self, raw_uid):
+        """
+        Convert a user raw id to an inner id.
+        :param raw_uid:
+        :return:
+        """
+        try:
+            return self._raw2inner_id_users[raw_uid]
+        except KeyError:
+            raise ValueError(
+                f"User {str(raw_uid)} is not part of the trainset."
+            )
+
+    def to_inner_iid(self, raw_iid):
+        """
+        Convert an item raw id to an inner id.
+        :param raw_iid:
+        :return:
+        """
+        try:
+            return self._raw2inner_id_items[raw_iid]
+        except KeyError:
+            raise ValueError(
+                f"item {str(raw_iid)} is not part of the trainset."
+            )
+
+    def knows_user(self, uid):
+        """
+        Indicate if the user is part of the trainset.
+        :param uid:
+        :return:
+        """
+        return uid in self.ur
+
+    def knows_item(self, iid):
+        """
+        Indicate if the item is part of the trainset.
+        :param iid:
+        :return:
+        """
+        return iid in self.ir
+
     @property
     def global_mean(self):
         """
